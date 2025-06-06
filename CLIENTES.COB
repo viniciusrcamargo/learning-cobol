@@ -9,10 +9,16 @@
        01  WRK-SALDO   PICTURE S9(05) VALUE ZEROS.
 
        PROCEDURE       DIVISION.
-      *    atribuindo valor a variáveis
-           MOVE "Vinicius" TO WRK-NOME.
-           MOVE 1200 TO WRK-SALDO.
-
+           DISPLAY "DIGITE SEU NOME: ".
+               ACCEPT WRK-NOME.
+           DISPLAY "DIGITE SEU SALDO: ".
+               ACCEPT WRK-SALDO.
+      * OPERADORES ARITMÉTICOS     
+           ADD 500 TO WRK-SALDO.
+           DISPLAY WRK-NOME WRK-SALDO.
+           DISPLAY "SALDO " WRK-SALDO.
+      *------SUBTRAÇÃO------    
+           SUBTRACT 200 FROM WRK-SALDO.
            DISPLAY WRK-NOME WRK-SALDO.
            DISPLAY "SALDO " WRK-SALDO.
            STOP RUN.
