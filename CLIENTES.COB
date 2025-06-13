@@ -22,7 +22,8 @@
                ACCEPT WRK-TIPO-CONTA.
       
 
-           IF WRK-SALDO GREATER THAN OR EQUAL 5000
+           IF WRK-SALDO GREATER THAN OR EQUAL 5000 AND
+               (WRK-TIPO-CONTA EQUAL 1 OR WRK-TIPO-CONTA EQUAL 2)
            DISPLAY WRK-NOME
               MOVE WRK-SALDO TO WRK-SALDO-ED
            DISPLAY "SALDO " WRK-SALDO-ED
@@ -37,7 +38,13 @@
            DISPLAY "---------------------------"
 
            ELSE
-           DISPLAY "SALDO NÃO COMPATIVEL"
+            EVALUATE TRUE
+               WHEN WRK-SALDO LESS 5000
+               DISPLAY "SALDO NAO COMPATIVEL"
+               WHEN WRK-TIPO-CONTA NOT EQUAL 1 OR 
+                    WRK-TIPO-CONTA NOT EQUAL 2
+               DISPLAY "TIPO DE CONTA NAO EXISTE"
+            END-EVALUATE
            END-IF.
 
            STOP RUN.   
