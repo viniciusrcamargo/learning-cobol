@@ -1,0 +1,72 @@
+           PROGRAM-ID. CLIENTES.
+      * COMENTARIO
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL
+              SELECT EARQCLI ASSIGN TO ".\EARQCLI.TXT"
+                FILE STATUS IS FS-EARQCLI.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 REGISTRO.
+           05 REG-AGENCIA      PICTURE X(04).
+           05 REG-CONTA        PICTURE X(05).
+           05 REG-NOME         PICTURE X(30).
+           05 REG-GERENTE      PICTURE X(03).
+           05 REG-TIPO-CONTA   PICTURE X(01).
+           05 REG-SALDO        PICTURE S9(10)V99.
+
+       01 WRK-CONTADOR     PICTURE 9(03) USAGE COMP VALUE ZEROS.
+       01 FS-EARQCLI       PICTURE X(02).
+
+       PROCEDURE DIVISION.
+
+       0100-PRINCIPAL SECTION.
+           PERFORM 0200-INICIAR.
+           PERFORM 0300-PROCESSAR.
+           PERFORM 0400-FINALIZAR.
+           STOP RUN.
+       0100-FIM. EXIT.
+
+       0200-INICIAR SECTION.
+           DISPLAY "DIGITE SEU NOME ".
+           ACCEPT REG-NOME.
+           DISPLAY "DIGITE SUA AGENCIA ".
+           ACCEPT REG-AGENCIA.
+           DISPLAY "DIGITE SUA CONTA ".
+           ACCEPT REG-CONTA.
+           DISPLAY "DIGITE SEU GERENTE ".
+           ACCEPT REG-GERENTE.
+           DISPLAY "DIGITE SEU SALDO ".
+           ACCEPT REG-SALDO.
+           DISPLAY "Qual o tipo de conta 1:Fisica -2: Juridica 9-Sair ".
+           ACCEPT REG-TIPO-CONTA.
+           ADD 1 TO WRK-CONTADOR.
+       0200-FIM. EXIT.
+
+       0300-PROCESSAR SECTION.
+           IF REG-SALDO GREATER THAN OR EQUAL 5000 AND
+              (REG-TIPO-CONTA EQUAL '1' OR REG-TIPO-CONTA EQUAL '2')
+               DISPLAY REGISTRO
+           ELSE
+               EVALUATE TRUE
+                   WHEN REG-SALDO LESS 5000
+                       DISPLAY "SALDO NAO COMPATIVEL"
+                   WHEN REG-TIPO-CONTA NOT EQUAL '1' AND REG-TIPO-CONTA NOT EQUAL '2' AND REG-TIPO-CONTA NOT EQUAL '9'
+                       DISPLAY "TIPO DE CONTA NAO EXISTE"
+                   WHEN REG-TIPO-CONTA EQUAL '9'
+                       DISPLAY "ENCERRANDO O PROGRAMA..."
+                   WHEN OTHER
+                       DISPLAY "OCORREU UM ERRO INESPERADO."
+               END-EVALUATE
+           END-IF.
+       0300-FIM. EXIT.
+
+       0400-FINALIZAR SECTION.
+           DISPLAY "PROCESSAMENTO FINALIZADO.".
+           DISPLAY "------------ESTATÍSTICA---------------".
+           DISPLAY "CLIENTES LIDOS: " WRK-CONTADOR.
+       0400-FIM. EXIT.

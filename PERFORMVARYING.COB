@@ -66,4 +66,4 @@
            DISPLAY "PROCESSAMENTO FINALIZADO.".
            DISPLAY "------------ESTATÍSTICA---------------".
            DISPLAY "CLIENTES LIDOS: " WRK-CONTADOR.
-       0400-FIM. EXIT
+       0400-FIM. EXIT.
