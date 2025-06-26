@@ -1,72 +1,132 @@
-           PROGRAM-ID. CLIENTES.
-      * COMENTARIO
 
-       ENVIRONMENT DIVISION.
-       CONFIGURATION SECTION.
+       IDENTIFICATION        DIVISION.
+       PROGRAM-ID. CLIENTES.
+      * COMENTARIO   
+       ENVIRONMENT           DIVISION.
+       CONFIGURATION         SECTION.
        SPECIAL-NAMES.
-           DECIMAL-POINT IS COMMA.
-       INPUT-OUTPUT SECTION.
-       FILE-CONTROL
-              SELECT EARQCLI ASSIGN TO ".\EARQCLI.TXT"
-                FILE STATUS IS FS-EARQCLI.
-       DATA DIVISION.
-       WORKING-STORAGE SECTION.
-       01 REGISTRO.
-           05 REG-AGENCIA      PICTURE X(04).
-           05 REG-CONTA        PICTURE X(05).
-           05 REG-NOME         PICTURE X(30).
-           05 REG-GERENTE      PICTURE X(03).
-           05 REG-TIPO-CONTA   PICTURE X(01).
-           05 REG-SALDO        PICTURE S9(10)V99.
+           DECIMAL-POINT     IS COMMA.    
+       INPUT-OUTPUT          SECTION.
+       FILE-CONTROL.
+           SELECT EARQCLI ASSIGN TO ".\EARQCLI.TXT" 
+               FILE STATUS IS FS-EARQCLI. 
+           SELECT SARQCLI ASSIGN TO ".\SARQCLI.TXT" 
+               FILE STATUS IS FS-SARQCLI.     
 
-       01 WRK-CONTADOR     PICTURE 9(03) USAGE COMP VALUE ZEROS.
-       01 FS-EARQCLI       PICTURE X(02).
+       DATA                  DIVISION. 
+       FILE                  SECTION.
+       FD  EARQCLI
+           RECORDING  MODE IS F.
+           COPY "BOOKCLI".
+           
+      *    LAYOUT = 55 POSICOES
 
-       PROCEDURE DIVISION.
+       FD  SARQCLI
+           RECORDING MODE IS F.
+      *    LAYOUT = 22 POSICOES (AGENCIA, CONTA, TIPO E SALDO)
+       01  REG-SARQCLI           PICTURE X(22).
 
-       0100-PRINCIPAL SECTION.
-           PERFORM 0200-INICIAR.
-           PERFORM 0300-PROCESSAR.
-           PERFORM 0400-FINALIZAR.
-           STOP RUN.
+
+
+
+       WORKING-STORAGE       SECTION.
+
+      *------------ VARIAVEIS DE STATUS
+       01  FS-EARQCLI            PICTURE 9(02).
+       01  FS-SARQCLI            PICTURE 9(02).
+
+      *------------ VARIAVEIS ACUMULADORAS 
+       01  WRK-CONTADOR          PICTURE 9(03) USAGE COMP.
+       01  WRK-CONTADOR-VALIDO   PICTURE 9(03) USAGE COMP.
+       01  WRK-CONTADOR-NVALIDO  PICTURE 9(03) USAGE COMP.   
+
+       PROCEDURE             DIVISION.
+       0100-PRINCIPAL        SECTION.
+           PERFORM  0200-INICIAR. 
+           PERFORM  0300-PROCESSAR UNTIL FS-EARQCLI EQUAL 10. 
+           PERFORM  0400-FINALIZAR.
+           STOP  RUN.
+
+
        0100-FIM. EXIT.
+       
+      *----------------------- INICIAR
+       0200-INICIAR          SECTION.
+             OPEN INPUT  EARQCLI.
+             OPEN OUTPUT SARQCLI.
 
-       0200-INICIAR SECTION.
-           DISPLAY "DIGITE SEU NOME ".
-           ACCEPT REG-NOME.
-           DISPLAY "DIGITE SUA AGENCIA ".
-           ACCEPT REG-AGENCIA.
-           DISPLAY "DIGITE SUA CONTA ".
-           ACCEPT REG-CONTA.
-           DISPLAY "DIGITE SEU GERENTE ".
-           ACCEPT REG-GERENTE.
-           DISPLAY "DIGITE SEU SALDO ".
-           ACCEPT REG-SALDO.
-           DISPLAY "Qual o tipo de conta 1:Fisica -2: Juridica 9-Sair ".
-           ACCEPT REG-TIPO-CONTA.
-           ADD 1 TO WRK-CONTADOR.
+             IF FS-EARQCLI NOT EQUAL ZEROS OR  
+                FS-SARQCLI NOT EQUAL ZEROS
+               DISPLAY "ARQUIVO(S) NAO ABERTO(S)"
+               GOBACK
+             END-IF. 
+
+             PERFORM 0210-LEITURA.  
+
+
        0200-FIM. EXIT.
 
-       0300-PROCESSAR SECTION.
-           IF REG-SALDO GREATER THAN OR EQUAL 5000 AND
-              (REG-TIPO-CONTA EQUAL '1' OR REG-TIPO-CONTA EQUAL '2')
-               DISPLAY REGISTRO
+       0210-LEITURA         SECTION.
+            READ EARQCLI.    
+       0210-FIM. EXIT.
+
+
+
+
+
+      *----------------------- PROCESSAR
+       0300-PROCESSAR        SECTION.
+               
+             ADD 1 TO WRK-CONTADOR.
+
+            IF REG-SALDO GREATER THAN OR EQUAL  5000  AND 
+              (REG-TIPO-CONTA EQUAL 1  OR  REG-TIPO-CONTA EQUAL 2 )
+
+               STRING REG-AGENCIA    DELIMITED  BY SIZE
+                      REG-CONTA      DELIMITED  BY SIZE
+                      REG-TIPO-CONTA DELIMITED  BY SIZE
+                      REG-SALDO      DELIMITED  BY SIZE
+                 INTO REG-SARQCLI   
+
+                 WRITE REG-SARQCLI
+                  IF FS-SARQCLI NOT EQUAL ZEROS 
+                     DISPLAY "ERRO AO GRAVAR " REG-AGENCIA REG-CONTA
+                  END-IF   
+                   
+              ADD 1 TO WRK-CONTADOR-VALIDO
+  
            ELSE
-               EVALUATE TRUE
-                   WHEN REG-SALDO LESS 5000
-                       DISPLAY "SALDO NAO COMPATIVEL"
-                   WHEN REG-TIPO-CONTA NOT EQUAL '1' AND REG-TIPO-CONTA NOT EQUAL '2' AND REG-TIPO-CONTA NOT EQUAL '9'
-                       DISPLAY "TIPO DE CONTA NAO EXISTE"
-                   WHEN REG-TIPO-CONTA EQUAL '9'
-                       DISPLAY "ENCERRANDO O PROGRAMA..."
-                   WHEN OTHER
-                       DISPLAY "OCORREU UM ERRO INESPERADO."
-               END-EVALUATE
+
+
+      *           EVALUATE TRUE
+      *              WHEN REG-SALDO LESS 5000
+      *                 DISPLAY "SALDO NAO COMPATIVEL" 
+      *              WHEN REG-TIPO-CONTA NOT EQUAL 1 OR
+      *                   REG-TIPO-CONTA NOT EQUAL 2  
+      *                  DISPLAY "TIPO DE CONTA NAO EXISTE" 
+      *           END-EVALUATE 
+
+                 ADD 1 TO WRK-CONTADOR-NVALIDO
+
            END-IF.
+
+              PERFORM 0210-LEITURA.
+
        0300-FIM. EXIT.
 
-       0400-FINALIZAR SECTION.
-           DISPLAY "PROCESSAMENTO FINALIZADO.".
-           DISPLAY "------------ESTATÍSTICA---------------".
+      *----------------------- FINALIZAR
+       0400-FINALIZAR        SECTION.
+           CLOSE EARQCLI
+                 SARQCLI.
+
+
+           DISPLAY "----------------------".
+           DISPLAY "--- ESTATISTICA  -----".
            DISPLAY "CLIENTES LIDOS: " WRK-CONTADOR.
+           DISPLAY "VALIDOS.......: " WRK-CONTADOR-VALIDO.
+           DISPLAY "NAO VALIDOS...: " WRK-CONTADOR-NVALIDO.
+
+
        0400-FIM. EXIT.
+
+  
